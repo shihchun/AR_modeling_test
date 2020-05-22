@@ -9,7 +9,7 @@ e = e / max(e);
 
 a = [];
 sets = 5; % test sets
-lag = 3; % AR(p) p is lag
+lag = 10; % AR(p) p is lag
 % (N-lag)>=2 need to be true(==1), '>1' -> lag ,'>2' integral
 
 % Generate the a(r) AR is not able to linear regression but just test
