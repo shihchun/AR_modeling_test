@@ -1,6 +1,6 @@
 clear all; clc;
 % parameter
-N = 7; % quantity of samples
+N = 100; % quantity of samples
 e = randn(N);
 e = e / max(e);
 
@@ -9,7 +9,7 @@ e = e / max(e);
 
 a = [];
 sets = 5; % test sets
-lag = 2; % AR(p) p is lag
+lag = 3; % AR(p) p is lag
 % (N-lag)>=2 need to be true(==1), '>1' -> lag ,'>2' integral
 
 % Generate the a(r) AR is not able to linear regression but just test
@@ -108,7 +108,9 @@ for j = 1:sets % 這裏開始計算distortion rate N-lag-1 筆資料
         str_intgral_R  = sprintf(str1+str2+str3+strff+strfin);
         R_integral_fun = str2func(str_intgral_R); % struct()
         R = integral2(R_integral_fun, 0,1, -pi, pi);
-        
+        % print iter
+        listss = ['index for integral = ', string(ind), '\n(sets,samples) : \n(',string(j),' ',string(i),')'];
+        sprintf( listss(1)+listss(2)+listss(3)+listss(4)+listss(5)+listss(6)+listss(7) )
     end
 end
 clearvars str11 str12 str13 str1 str2 str3 str4 str5 str6 str7 str8 str9 strff strfin list list_fn;
