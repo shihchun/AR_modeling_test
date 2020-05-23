@@ -100,7 +100,7 @@ for j = 1:sets % 這裏開始計算distortion rate N-lag-1 筆資料
         D_integral_fun = str2func(str_intgral_D); % struct()
         D = integral2(D_integral_fun, 0,1, -pi, pi);
         
-        str11 = '@(r,w)1./2.*log(1.*';
+        str11 = '@(r,w)1./2.*log(1./';
         str12 = string(D); % multiple min value of 1/g -integral-> D (1/g), use D
         str13 = './( 1./('; 
         strfin = ').^2))';
