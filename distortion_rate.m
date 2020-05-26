@@ -32,7 +32,13 @@ end
 sigma = zeros(1,N); theta = zeros(1,N); r = zeros(1,N); omega = zeros(1,N);
 g = zeros(1,N); xx = zeros(1,N); nn = zeros(1,N);
 % omega and m don't know the const values
-
+for j = 1:sets % 這裏開始計算distortion rate N-lag-1 筆資料
+    for i = (1+lag):N % calc start from AR(p->lag) --> lag+2
+        xc(i,j) = ac(j).*x(i-lag,j)+e(i); % 對照組 constant a
+        x(i,j) = a(i).*x(i-lag,j)+e(i);
+    end
+end
+sets = 1;
 for j = 1:sets % 這裏開始計算distortion rate N-lag-1 筆資料
     for i = (1+lag):N % calc start from AR(p->lag) --> lag+2
         xc(i,j) = ac(j).*x(i-lag,j)+e(i); % 對照組 constant a
@@ -92,7 +98,7 @@ for j = 1:sets % 這裏開始計算distortion rate N-lag-1 筆資料
             strff = sprintf(str9+list_fn(indd-1)+list_fn(indd));
         end
         strfin = ').^2)';
-        str_intgral_D = sprintf(str1+str2+str3+strff+strfin) % for D
+        str_intgral_D = sprintf(str1+str2+str3+strff+strfin); % for D
         D_integral_fun = str2func(str_intgral_D); % struct()
         D = integral2(D_integral_fun, 0,1, -pi, pi);
         
@@ -101,12 +107,12 @@ for j = 1:sets % 這裏開始計算distortion rate N-lag-1 筆資料
         str13 = './( 1./('; 
         strfin = ').^2))';
         str1 = sprintf(str11+str12+str13);
-        str_intgral_R  = sprintf(str1+str2+str3+strff+strfin)
+        str_intgral_R  = sprintf(str1+str2+str3+strff+strfin);
         R_integral_fun = str2func(str_intgral_R); % struct()
         R = integral2(R_integral_fun, 0,1, -pi, pi);
         Deq(i) = D;
         Req(i) = R;
-        
+        fprintf('\n\n(iter,Deq,Req): (%d,%d,%d) \n\n',i,D,R);
     end
 end
 clearvars str11 str12 str13 str1 str2 str3 str4 str5 str6 str7 str8 str9 strff strfin list list_fn;
