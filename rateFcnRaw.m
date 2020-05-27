@@ -1,4 +1,6 @@
-function [D,R] = rateFcn(g_struct)
+clc;
+rate_test;  
+close all;
 % have g_struct generated
 %g_struct = struct('lag_p',lag,'samples',N, 'varing_gain',a,...
 %        'predict',x,'noise',e, 'input',e );
@@ -14,21 +16,17 @@ sigma = var(g_struct.predict);
 
 %theta = max(x) - sigma./4;
 theta = 8.112630e-06;
-
-r = g_struct.varing_gain; % t/N in the Model
-% calc the g from omega = [-pi, pi]
-omega = linspace(-pi,pi,1000);
-%omega = logspace(-pi,pi,1000);
+theta = 0.0024;
 
 % calcl the g
+omega = linspace(-pi,pi,1000);
+%omega = logspace(-pi,pi,1000);
 g = zeros(length(omega),g_struct.samples);
-% g(i,:) = 1./( (sigma).^2 ).*abs(1+ sum(g_struct.varying_gain .* exp(-j.*g_struct.varing_gain.*omega(i)) ) ).^2;
+% g(i,:) = 1./( (sigma).^2 ).*abs(1+ sum(g_struct.varying_gain .* exp(-j.*m*omega(i)) ) ).^2;
 for i = 1:length(omega)
+    poly_of_sum = 0;
     for m = 1:g_struct.samples
-        poly_of_sum = 0;
-        for k = 1:g_struct.lag_p
-            poly_of_sum = poly_of_sum + g_struct.varing_gain(k) .* exp(-j.*m.*omega(i));
-        end
+        poly_of_sum = poly_of_sum + g_struct.varing_gain(m) .* exp(-j.*m.*omega(i));
         g(i,m) = 1./( (sigma).^2 ).*abs(1+ poly_of_sum ).^2;
     end
 end
@@ -64,19 +62,18 @@ end
 % str4: a1*exp(-jmw)+a2*exp(exp(-jmw)+...
 str4 =sprintf('('+poly_str4+')');% (sum)
 str5 = ').^2)';
-D_poly = sprintf(str1+str2+str3+str4+str5);
+D_poly = sprintf(str1+str2+str3+str4+str5)
 D_fun = str2func(D_poly); % str2func
-D = integral2(D_fun, 0,1, -pi, pi)
+D = integral2(D_fun, 0,1, -pi, pi);
 
 str1 = sprintf('@(r,w) 1./'+string(theta)+'./(1./ ('); % ad ./theta to fun
 R_poly = sprintf(str1+str2+str3+str4+str5);
 R_fun = str2func(R_poly); % struct()
-R = integral2(R_fun, 0,1, -pi, pi)
-
+R = integral2(R_fun, 0,1, -pi, pi);
+fprintf(' D: %d  , R: %d\n',D,R);
 % k_flat(iter) % use this minimum value in the final iteration
 % R_poly
 % D_poly
 % D
 % R
 % calc end %
-end
