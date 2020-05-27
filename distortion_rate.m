@@ -1,15 +1,15 @@
 clear all; clc;
 % parameter
-N = 100; % quantity of samples
+N = 20; % quantity of samples
 e = randn(N);
-e = e / max(e);
+e = 10+ e / max(e);
 
-% es = sin((1:N))+ sin((1:N).*2+10); % add sin sin wave
-% e = 1./6.*(es'+e); % es' is transpose result of es
+es = 6.*sin(500.*(1:N))%+ 4.*sin((1:N).*2+10); % add sin sin wave
+e = 1./6.*(es'+e); % es' is transpose result of es
 
 a = [];
 sets = 5; % test sets
-lag = 5; % AR(p) p is lag
+lag = 1; % AR(p) p is lag
 % (N-lag)>=2 need to be true(==1), '>1' -> lag ,'>2' integral
 
 % Generate the a(r) AR is not able to linear regression but just test
@@ -126,7 +126,7 @@ R
 % Plot
 str1 = ['AR', '(', string(lag), ')' ];
 t = linspace(1,N,N);
-ylimit_const = [-0.6, 0.6];
+ylimit_const = [-0.6, 20];
 AR = sprintf( str1(1)+str1(2)+str1(3)+str1(4));
 
 figure();

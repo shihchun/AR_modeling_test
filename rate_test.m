@@ -8,45 +8,40 @@ e = e / max(e);
 % e = 1./6.*(es'+e); % es' is transpose result of es
 
 a = [];
-sets = 5; % test sets
-lag = 2; % AR(p) p is lag
+lag = 10; % AR(p) p is lag
 % (N-lag)>=2 need to be true(==1), '>1' -> lag ,'>2' integral
+a = zeros(1,lag);
+ac = zeros(1,lag);
 
-% Generate the a(r) AR is not able to linear regression but just test
 % time varying a --> design varying a
 for i = 1:N
-    a(i) = (i/N); 
+    a(i) = (i/N);
 end
-ac = zeros(sets,1); % index sets with constant
-ac = [0.1, 0.9, -0.9 ,0.3, 0.5]; % constant close to 0, 1...
 
-x = zeros(N,sets);
-xc = zeros(N,sets); % 初始化矩陣大小 constant
+% ac = [0.1, 0.9, -0.9 ,0.3, 0.5]; % constant close to 0, 1...
+k = randn(lag);
+ac = k / max(k);  % random a [-1,1]
 
-for j =1:lag % lag not calc
-    for i = 1:5 % which data
-        x(j,i) = 0; % a(i).*x(j,i)+e(j);
-        xc(j,i) = 0; % ac(i).*x(j,i)+e(j);
+x = zeros(1,N);
+xc = zeros(1,N); % 初始化矩陣大小 constant
+
+for i =1:lag % lag not calc
+    x(i) = e(i); % a(i).*x(j,i)+e(j);
+    xc(i) = e(i); % ac(i).*x(j,i)+e(j);
+end
+
+for i = (1+lag):N % calc start from AR(p->lag) --> lag+2
+    ax_poly = zeros(1,lag);
+    axc_poly = zeros(1,lag);
+    for k =1:lag % ex: a1.*x_{3-lag}+ a2.*x_{3-lag}, lag =2
+        ax_poly(k) = a(k).*x(i-lag);
+        axc_poly(k) = ac(k).*x(i-lag);
     end
+    x(i) =sum(ax_poly)+e(i);
+    xc(i) = sum(axc_poly)+e(i); % 對照組 constant a
+    g_struct = struct('lag_p',lag,'samples',N, 'varing_gain',a,...
+        'predict',x,'noise',e, 'input',e );
 end
-
-for j = 1:sets % lag+1 這裏只有一筆資料，無法積分
-    i = lag+1;
-    xc(i,j) = ac(j).*x(i,j)+e(i); % 對照組 constant a
-    x(i,j) = a(i).*x(i,j)+e(i);
-end
-
-% omega and m don't know the const values
-
-for j = 1:sets % 這裏開始計算distortion rate N-lag-1 筆資料
-    for i = (2+lag):N % calc start from AR(p->lag) --> lag+2
-        xc(i,j) = ac(j).*x(i-lag,j)+e(i); % 對照組 constant a
-        x(i,j) = a(i).*x(i-lag,j)+e(i);
-        g_struct = struct('lag_p',lag,'samples',N, 'varing_gain',a,...
-            'predict',x(:,1),'noise',(e.*0.9), 'input',e );
-    end
-end
-
 
 % Plot
 % print the distortion rate of x(lag:N) t in [lag, N]
@@ -59,8 +54,8 @@ figure();
 subplot(3, 1, 1);
 plot(t(lag:end),e(lag:end));
 hold on;
-plot(t(lag:end),xc(lag:end,1));
-title('gain of a = 0.1 close to 0');
+plot(t(lag:end),xc(lag:end));
+title('gain of random num');
 xlim([lag, N]); %xlim(0, N);
 ylim(ylimit_const); %ylim(-2, 2);
 xlabel('samples');
@@ -71,19 +66,7 @@ legend('noise', AR)
 subplot(3, 1, 2);
 plot(t(lag:end),e(lag:end));
 hold on;
-plot(t(lag:end),xc(lag:end,2));
-title('gain of a = 0.9 close to 1')
-xlim([lag, N]); %xlim(0, N);
-ylim(ylimit_const); %ylim(-2, 2);
-xlabel('samples');
-ylabel('e, x') ;
-% legend(['noise', 'AR(2)'], loc='best');
-% tight_layout(pad=0.5, w_pad=0.5, h_pad=1.0);
-legend('noise', AR)
-subplot(3, 1, 3);
-plot(t(lag:end),e(lag:end));
-hold on;
-plot(t(lag:end),x(lag:end,1));
+plot(t(lag:end),x(lag:end));
 title('gain of a = r, r = t/N & distotion rate')
 xlim([lag, N]); %xlim(0, N);
 ylim(ylimit_const); %ylim(-2, 2);
