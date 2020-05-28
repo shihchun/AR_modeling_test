@@ -36,7 +36,7 @@ for i =1:lag % lag not calc
     xc(i) = e(i); % ac(i).*x(j,i)+e(j);
 end
 Deq = zeros(1,N-lag); Req = Deq;
-for i = (1+lag):N % calc start from AR(p->lag) --> lag+2
+for i = (1+lag):N % calc start from AR(p->lag) --> lag+1
     ax_poly = zeros(1,lag);
     axc_poly = zeros(1,lag);
     for k =1:lag % ex: a1.*x_{3-lag}+ a2.*x_{3-lag}, lag =2

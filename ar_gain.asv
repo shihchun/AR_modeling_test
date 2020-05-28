@@ -11,17 +11,12 @@ h = @(t,n,j) (t./(n+1)).^j; % h(r(n+1),n,j)
 if r ==1
     a = sum( a( round(r.*(n) ) ).*h(round( r.*(n) ) ,n,j) ) ;% r ==1 .* n+1 exceed the samples number
 else
-    %--------------------------------%
-    %Array indices must be positive integers or logical values
     % assemble to workspace debuging
-    assignin('base','bug_r',r);
-    assignin('base','bug_n',n);
-    assignin('base','bug_fcn_h',h);
-    assignin('base','bug_j',1:10);
-    %g_struct.varing_gain( round(bug_r.*(bug_n+1) ) )
-    %bug_fcn_h(round( bug_r.*(bug_n+1) ) ,bug_n,bug_j)
-    %bug_a = g_struct.varing_gain( round(bug_r.*(bug_n+1) ) ).*bug_fcn_h(round( bug_r.*(bug_n+1) ) ,bug_n,bug_j)
-    %--------------------------------%
+    assignin('base','const_r',r)
+    assignin('base','const_n',n)
+    
+    r
+    n
     a( round(r.*(n+1) ) )
     h(round( r.*(n+1) ) ,n,j) 
     a = sum( a( round(r.*(n+1) ) ).*h(round( r.*(n+1) ) ,n,j) ); % a use g_struct.varing_gain

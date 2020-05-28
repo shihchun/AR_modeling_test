@@ -39,8 +39,10 @@ else
 end
 
 %iter = mod(index, g_struct.samples)+1 % searching the iteration of min value
-mod(index,g_struct.samples);
-iter = max(mod(index,g_struct.samples))+1; % 10翴т程
+% iter must large than p lags of AR(p)
+mod(index,g_struct.samples)
+iter = min(mod(index,g_struct.samples))+1 % 10翴т程
+fprint()
 % –Ωぃ笵?ぐ或ぃ琌程碞琌程常т材兜┪琌程兜
 % 42    43    44    45    46    47    48    49    50     1
 
@@ -70,11 +72,15 @@ ar_gain = @(r,n,j,a) sum( a( round(r.*(n+1) ) ).*h(r.*(n+1),n,j) );% a use g_str
 poly_str4 = string('');
 for k = 1:iter % with a(k), g_struct.varing_gain(k)
     % ar(r, g_struct.samples, k ,g_struct.varing_gain) % k is the そΑい j
-    gain_list_str = ''; %ex: [ 0.6800    0.7000    0.7200    0.740]
-    for lengh_of_a = 1:length(g_struct.varing_gain)
-        gain_list_str = g_struct.varing_gain(lengh_of_a)
+    gain_list_str = '['; %ex: [ 0.6800    0.7000    0.7200    0.740]
+    for length_of_a = 1:length(g_struct.varing_gain)
+        if length_of_a == length(g_struct.varing_gain)
+            gain_list_str = sprintf(gain_list_str+ string(g_struct.varing_gain(length_of_a))+']' );
+        else
+            gain_list_str = sprintf(gain_list_str+ string(g_struct.varing_gain(length_of_a))+',' );
+        end       
     end
-    gain = sprintf('ar_gain(r,g_struct.samples,'+string(k)+',g_struct.varing_gain)');
+    gain = sprintf('ar_gain(r,'+string(g_struct.samples)+','+string(k)+','+gain_list_str+')');
     %gain = string(g_struct.varing_gain(k)); %-jwm  m is eq to iter
     m = string(k);
     str_temp = '.*exp(-j.*';
@@ -99,7 +105,8 @@ end
 str4 =sprintf('('+poly_str4+')');% (sum)
 str5 = ').^2)';
 D_poly = sprintf(str1+str2+str3+str4+str5);
-D_fun = str2func(D_poly) % str2func
+D_fun = str2func(D_poly); % str2func
+assignin('base','bug_fcn_d',D_fun);
 % D = int_fcn(D_fun, g_struct)%
 D = integral2(D_fun, 0,1, -pi, pi);
 

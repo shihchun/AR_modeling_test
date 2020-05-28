@@ -22,7 +22,7 @@ g = zeros(length(omega),g_struct.samples);
 % g(i,:) = 1./( (sigma).^2 ).*abs(1+ sum(g_struct.varying_gain .* exp(-j.*m*omega(i)) ) ).^2;
 for i = 1:length(omega)
     poly_of_sum = 0;
-    for m = 1:g_struct.samples
+    for m = g_struct.lag_p:g_struct.samples
         poly_of_sum = poly_of_sum + g_struct.varing_gain(m) .* exp(-j.*m.*omega(i));
         g(i,m) = 1./( (sigma).^2 ).*abs(1+ poly_of_sum ).^2;
     end
@@ -39,8 +39,11 @@ else
 end
 
 %iter = mod(index, g_struct.samples)+1 % searching the iteration of min value
-mod(index,g_struct.samples);
-iter = max(mod(index,g_struct.samples))+1; % 10翴т程
+% iter must large than p lags of AR(p)
+
+iter = min(mod(index,g_struct.samples)) + g_struct.lag_p; % 10翴т程
+iter
+
 % –Ωぃ笵?ぐ或ぃ琌程碞琌程常т材兜┪琌程兜
 % 42    43    44    45    46    47    48    49    50     1
 
@@ -103,7 +106,8 @@ end
 str4 =sprintf('('+poly_str4+')');% (sum)
 str5 = ').^2)';
 D_poly = sprintf(str1+str2+str3+str4+str5);
-D_fun = str2func(D_poly) % str2func
+D_fun = str2func(D_poly); % str2func
+assignin('base','bug_fcn_d',D_fun);
 % D = int_fcn(D_fun, g_struct)%
 D = integral2(D_fun, 0,1, -pi, pi);
 
