@@ -1,6 +1,6 @@
 clear all; close all; clc;
 % parameter
-N = 50; % quantity of samples
+N = 7; % quantity of samples
 e = randn(N); % NxN
 e = e / max(e); % Nx1 [-1,1]
 
@@ -15,13 +15,10 @@ ac = zeros(1,N);
 % TVAR a = sum(a.*h)
 % h(t,n,j), r = t./(n+1) h = r.^j
 h = @(t,n,j) (t./(n+1)).^j; % Anonymous°Î¦W¨ç¼Æ 
-for i = 1:N
-%     a(1) = i./(i +1);
-%     for j = 1:i
-%         ah_sum(j) = a(i).*h(i,i,j);
-%     end
-%     a(i) = -sum(ah_sum);
-    a(i)= (i./N);
+% a(r) = g_struct.varing_gain( round(r.*(n+1) ) ).*h(r.*(n+1),n,j)
+at_gain = @(t,n,j) -sum( (t./n).*h(t,n,j) );% a use g_struct.varing_gain
+for i = lag:N
+    a(i) = at_gain(i,N,i);
 end
 %a = [0.999, -0.0104, -0.0042];
 % ac = [0.1, 0.9, -0.9 ,0.3, 0.5]; % constant close to 0, 1...

@@ -6,3 +6,5 @@ I use Matlab LiveScript to do it, cuz I have issue with integral ( with exp() an
 denominator of the polynomial ).
 
 scipy and trapz get the error number.
+
+¥ý©ñ®ÇÃä¡C
