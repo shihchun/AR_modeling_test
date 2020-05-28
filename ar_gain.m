@@ -8,6 +8,10 @@ h = @(t,n,j) (t./(n+1)).^j; % h(r(n+1),n,j)
 % a(t) = -sum(a(j).*h(r.*(n+1),n,j))
 % a(r) = g_struct.varing_gain( round(r.*(n+1) ) ).*h(r.*(n+1),n,j)
 %a = @(r,n,j,a) sum( a( round(r.*(n+1) ) ).*h(r.*(n+1),n,j) );% a use g_struct.varing_gain
-a = sum( a( round(r.*(n+1) ) ).*h(r.*(n+1),n,j) ) ;% a use g_struct.varing_gain
+if r ==1
+    a = sum( a( round(r.*(n) ) ).*h(round( r.*(n) ) ,n,j) ) ;% r ==1 .* n+1 exceed the samples number
+else
+    a = sum( a( round(r.*(n+1) ) ).*h(round( r.*(n+1) ) ,n,j) ) ;% a use g_struct.varing_gain
+end
 % anonymous function is a short term function so need to --> *.m file
 % ------------------------------------------------------%
