@@ -70,15 +70,11 @@ ar_gain = @(r,n,j,a) sum( a( round(r.*(n+1) ) ).*h(r.*(n+1),n,j) );% a use g_str
 poly_str4 = string('');
 for k = 1:iter % with a(k), g_struct.varing_gain(k)
     % ar(r, g_struct.samples, k ,g_struct.varing_gain) % k is the 公式中的 j
-    gain_list_str = '['; %ex: [ 0.6800    0.7000    0.7200    0.740]
-    for length_of_a = 1:length(g_struct.varing_gain)
-        if length_of_a == length(g_struct.varing_gain)
-            gain_list_str = sprintf(gain_list_str+ string(g_struct.varing_gain(length_of_a))+']' );
-        else
-            gain_list_str = sprintf(gain_list_str+ string(g_struct.varing_gain(length_of_a))+',' );
-        end       
+    gain_list_str = ''; %ex: [ 0.6800    0.7000    0.7200    0.740]
+    for lengh_of_a = 1:length(g_struct.varing_gain)
+        gain_list_str = g_struct.varing_gain(lengh_of_a)
     end
-    gain = sprintf('ar_gain(r,'+string(g_struct.samples)+','+string(k)+','+gain_list_str+')');
+    gain = sprintf('ar_gain(r,g_struct.samples,'+string(k)+',g_struct.varing_gain)');
     %gain = string(g_struct.varing_gain(k)); %-jwm  m is eq to iter
     m = string(k);
     str_temp = '.*exp(-j.*';

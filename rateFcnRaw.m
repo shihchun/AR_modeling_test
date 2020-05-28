@@ -50,8 +50,8 @@ str3 = '.^2).* abs(1+';
 
 poly_str4 = string('');
 for k = 1:iter
-    gain = string(g_struct.varing_gain(iter)); %-jwm  m is eq to iter
-    m = string(iter);
+    gain = string(g_struct.varing_gain(k)); %-jwm  m is eq to iter
+    m = string(k);
     str_temp = '.*exp(-j.*';
     if k==1
         poly_str4 = sprintf(  gain + str_temp + m +'.*w)' );
@@ -66,8 +66,9 @@ D_poly = sprintf(str1+str2+str3+str4+str5)
 D_fun = str2func(D_poly); % str2func
 D = integral2(D_fun, 0,1, -pi, pi);
 
-str1 = sprintf('@(r,w) 1./'+string(theta)+'./(1./ ('); % ad ./theta to fun
-R_poly = sprintf(str1+str2+str3+str4+str5);
+str1 = sprintf('@(r,w) 1./2.*log2(1./'+string(theta)+'./(1./ (');  % add 1./2log(1./theta./g)to fun
+str5 = ').^2) )';
+R_poly = sprintf(str1+str2+str3+str4+str5)
 R_fun = str2func(R_poly); % struct()
 R = integral2(R_fun, 0,1, -pi, pi);
 fprintf(' D: %d  , R: %d\n',D,R);
