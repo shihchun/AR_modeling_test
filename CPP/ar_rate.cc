@@ -1,9 +1,10 @@
 /* 
 Author: Shih Chun Huang
 conpile flags with gnu scienctific library (gsl) --> qmc integrator need it
-g++ -std=c++11 -lgsl -lgslcblas arima.cc
+g++ -std=c++11 -lgsl -lgslcblas ar_rate.cc
 ./a.out
-if use linux, you can try GPU compute with cuda
+if use linux, you can try GPU compute with cuda(nvcc)
+nvcc -arch=<arch> -std=c++11 -rdc=true -x cu -Xptxas -O0 -Xptxas --disable-optimizer-constants  -lgsl -lgslcblas ar_rate.cc
 */
 #include <iostream> // IO
 #include <fstream> // 讀寫文件用 STL要多include
@@ -86,9 +87,41 @@ typedef struct
   double theta = 0.1; // threshold of the integral parameter
 }parmeters; // 這是別名
 
+struct {
+    const unsigned long long int number_of_integration_variables = 3;
+#ifdef __CUDACC__ //定義給
+    __host__ __device__
+#endif
+    double operator()(double* x) const //  積分公式產生用的struct
+    {
+        return x[0]*x[1]*x[2]*exp(3*x[2]);
+    }
+} distor_D; // 返回這個給integrator.integrate(stuct)
+
+struct {
+    const unsigned long long int number_of_integration_variables = 3;
+#ifdef __CUDACC__ //定義給
+    __host__ __device__
+#endif
+    double operator()(double* x) const //  積分公式產生用的struct
+    {
+        return x[0]*x[1]*x[2]*exp(3*x[2]);
+    }
+} Rate_R; // 返回這個給integrator.integrate(stuct)
+
 int 
 main()
 {
+  // integral
+  // initial object by smart pointer
+  const unsigned int MAXVAR = 3; // 幾個變數項
+  integrators::Qmc<double,double,MAXVAR,integrators::transforms::Korobov<3>::type> integrator;
+  integrator.generatingvectors = integrators::generatingvectors::cbcpt_dn2_6();
+  // passthough the integral struct
+  integrators::result<double> result = integrator.integrate(Rate_R);
+  std::cout << "integral = " << result.integral << std::endl;
+  std::cout << "error    = " << result.error    << std::endl;
+
   parmeters parms;
   // 產生 time [1,100]
   vector<double>  t = linspace(1,endtime,samples);
@@ -120,10 +153,6 @@ main()
   // 由於zt noise的地方之前就先加入了-->x, xt是沒有加入的
   // 如果要模擬再多加入noise的話，可能要再產生一個noise矩陣，區間範圍要自定義，先沒有加入
   // 看需求noise再加在哪邊
-  // varience 求法參照 gsl https://www.gnu.org/software/gsl/doc/html/statistics.html
-  // vector 用的有點多了，這裏要傳入double array，但是vector的push_back 很好用，所以
-  // 用arr[vec.size()];  std::copy(vec.begin(), vec.end(), arr)解決
-  // gsl_stats_variance_m(const double data[], size_t stride, size_t n, double mean), 回傳double
   double mean;
   double variance;
   vector<double> tvar;
@@ -137,7 +166,7 @@ main()
       Distor.push_back(0);
       Rate.push_back(0);
     } else{ // i>0
-      tvar.push_back( (parms.const_a*x[i-2]+parms.const_a*x[i-1]+x[i-1]) );
+      tvar.push_back( (0.1*x[i-2]+parms.const_a*x[i-1]+x[i-1]) );
       //calc variance
       double data[tvar.size()]; 
       copy(tvar.begin(), tvar.end(), data);
@@ -153,22 +182,25 @@ main()
   print_vector(tvar);
   // 對照用的 ar(lag)
   vector<double> ar;
+  vector<double> nrr;
   for (int i=0; i<= t.size()-1; i++){
     if(i<lag){
       ar.push_back(0); // 不存東西
+      nrr.push_back(0);
     } else { // i>0
       ar.push_back( (parms.const_a*x[i-1]+x[i-1]) );// parms.const_a*x[i-2]+parms.const_a*x[i-1]+x[i-1] if lag=2 ...etc
+      nrr.push_back( (parms.const_a*noise[i-1]+noise[i-1]) ); // noise only ar 如果加入現在時間的noise[i]而不是i-1，會很準
     }
   }
   
   // 寫入csv
   ofstream out("test.csv"); // sefl-define
-  out<< 't' << ',' << "xt without noise" <<','<< 'x'<<','<<"lag("<<to_string(lag)<<") a="<< to_string(parms.const_a) <<',' << "noise" <<','<< "TVAR" <<endl;
+  out<< 't' << ',' << "xt without noise" <<','<< 'x'<<','<<"lag("<<to_string(lag)<<") a="<< to_string(parms.const_a) <<',' << "noise" <<','<< "TVAR"<<','<<"noise ar(1)" <<endl;
   for (int i = 0; i <= t.size()-1; ++i){
       if (i==t.size()-1 ){ // 最後行不用endl
       out<< t[i] << ',' << xt[i]<<','<< x[i];
       } else {
-      out<< t[i] << ',' << xt[i]<<',' << x[i]<<','<< ar[i]<< ','<<noise[i]<<','<< tvar[i] <<endl;
+      out<< t[i] << ',' << xt[i]<<',' << x[i]<<','<< ar[i]<< ','<<noise[i]<<','<< tvar[i]<<','<< nrr[i] <<endl;
       }
   }
   out.close();

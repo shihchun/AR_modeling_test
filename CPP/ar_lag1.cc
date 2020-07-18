@@ -17,6 +17,7 @@ using namespace std; // 把STL全部用到命名空間，不用sin()可以直接
 
 #include "dependency/qmc.hpp" //for integral need gsl
 // namespace is integrators (integrators::transforms::Korobov)
+#include <gsl/gsl_statistics.h> // calculate the var and mean
 
 // linspace 複製來的
 template<typename T>
@@ -59,8 +60,9 @@ void print_vector(vector<double> vec)
 
 // 預處理設定 只能為int, long
 // AR(lag)
-#define samples 100 // sample 數量 解析度
+#define samples 200 // sample 數量 解析度 精度
 #define endtime 100 // 時間長度
+#define seq 100 // test seq length after predition
 #define lag 1 // lag sample 數量
 #define omega 326
 
@@ -73,8 +75,8 @@ int
 main()
 {
   parmeters parms;
-  // 產生 time [1,100]
-  vector<double>  t = linspace(1,endtime,samples);
+  // 產生 time [1,100] + seq length
+  vector<double>  t = linspace(1,endtime+seq,samples);
   // 產生noise [-1,1]
   vector<double> noise;
   for (int i=0; i<= t.size()-1; i++){
@@ -88,16 +90,17 @@ main()
     // x = xt+noise;
     x.push_back( (double) (xt[i]+ noise[i]) );
   }
-  // AR(lag) 事後預測
+  // AR(lag) 事後預測 到endtime
   vector<double> ar;
   for (int i=0; i<= t.size()-1; i++){
-    if(i<lag){
+    if(i<lag || t[i]>(endtime) ){
       ar.push_back(0); // 不存東西
     } else{ // i>0
       ar.push_back(parms.const_a*x[i-1]+x[i-1]);// parms.const_a*x[i-2]+parms.const_a*x[i-1]+x[i-1] if lag=2 ...etc
     }
   }
   print_vector(ar);
+  // Mean squared prediction error(MSPE)
 
   // 寫入csv
   ofstream out("test.csv"); // sefl-define
