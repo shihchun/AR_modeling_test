@@ -3,7 +3,8 @@ Author: Shih Chun Huang
 conpile flags with gnu scienctific library (gsl) --> qmc integrator need it
 g++ -std=c++11 -lgsl -lgslcblas arima.cc
 g++ -std=c++11 ar_lag1.cc  -lgsl -lgslcblas # macos or msys2
-g++ -std=c++11 ar_lag1.cc -I/usr/local/include/gsl -lgsl -lgslcblas -lpthread # wsl and linux need to add the suffix
+g++ -std=c++11 ar_lag1.cc -I/usr/local/include/gsl -lgsl -lgslcblas -lpthread # wsl and linux need to add the suffix if build from source
+g++ -std=c++11 ar_lag1.cc -lgsl -lgslcblas -lpthread # wsl and linux need -lpathread pahread.h
 ./a.out
 if use linux, you can try GPU compute with cuda
 */
@@ -94,15 +95,25 @@ main()
   }
   // AR(lag) 事後預測 到endtime
   vector<double> ar;
+  double mean;
+  double variance;
   for (int i=0; i<= t.size()-1; i++){
     if(i<lag || t[i]>(endtime) ){
       ar.push_back(0); // 不存東西
     } else{ // i>0
       ar.push_back(parms.const_a*x[i-1]+x[i-1]);// parms.const_a*x[i-2]+parms.const_a*x[i-1]+x[i-1] if lag=2 ...etc
+      //calc variance
+      double data[ar.size()]; 
+      copy(ar.begin(), ar.end(), data);
+      mean = gsl_stats_mean(data, 1, i+1);
+      variance = gsl_stats_variance(data, 1, i+1);
+      cout<< "mean: "<< mean<<endl<<"var: "<< variance<<endl<<endl;
     }
   }
   print_vector(ar);
   // Mean squared prediction error(MSPE)
+  // Stationarity 恆定性 期望值=mean val --> variance--> covariance
+  
 
   // 寫入csv
   ofstream out("test.csv"); // sefl-define

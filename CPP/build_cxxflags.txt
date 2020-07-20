@@ -1,5 +1,0 @@
-choco install msys2
-c++ -std=c++11 -lgsl -lgslcblas filename.cpp
-g++ c++ -std=c++11 -lgsl -lgslcblas filename.cpp
-
-#cl.exe -std=c++11 -lgsl -lgslcblas filename.cpp

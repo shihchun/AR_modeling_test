@@ -4,6 +4,7 @@ conpile flags with gnu scienctific library (gsl) --> qmc integrator need it
 g++ -std=c++11 -lgsl -lgslcblas arima.cc
 g++ -std=c++11 ar_rate.cc  -lgsl -lgslcblas # macos or msys2
 g++ -std=c++11 ar_rate.cc -I/usr/local/include/gsl -lgsl -lgslcblas -lpthread # wsl and linux need to add the suffix
+g++ -std=c++11 ar_rate.cc -lgsl -lgslcblas -lpthread # wsl and linux need -lpathread pahread.h
 ./a.out
 if use linux, you can try GPU compute with cuda
 */
