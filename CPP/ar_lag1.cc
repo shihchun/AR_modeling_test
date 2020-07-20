@@ -2,6 +2,8 @@
 Author: Shih Chun Huang
 conpile flags with gnu scienctific library (gsl) --> qmc integrator need it
 g++ -std=c++11 -lgsl -lgslcblas arima.cc
+g++ -std=c++11 ar_lag1.cc  -lgsl -lgslcblas # macos or msys2
+g++ -std=c++11 ar_lag1.cc -I/usr/local/include/gsl -lgsl -lgslcblas -lpthread # wsl and linux need to add the suffix
 ./a.out
 if use linux, you can try GPU compute with cuda
 */

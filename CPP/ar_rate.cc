@@ -1,10 +1,11 @@
 /* 
 Author: Shih Chun Huang
 conpile flags with gnu scienctific library (gsl) --> qmc integrator need it
-g++ -std=c++11 -lgsl -lgslcblas ar_rate.cc
+g++ -std=c++11 -lgsl -lgslcblas arima.cc
+g++ -std=c++11 ar_rate.cc  -lgsl -lgslcblas # macos or msys2
+g++ -std=c++11 ar_rate.cc -I/usr/local/include/gsl -lgsl -lgslcblas -lpthread # wsl and linux need to add the suffix
 ./a.out
-if use linux, you can try GPU compute with cuda(nvcc)
-nvcc -arch=<arch> -std=c++11 -rdc=true -x cu -Xptxas -O0 -Xptxas --disable-optimizer-constants  -lgsl -lgslcblas ar_rate.cc
+if use linux, you can try GPU compute with cuda
 */
 #include <iostream> // IO
 #include <fstream> // 讀寫文件用 STL要多include
@@ -189,7 +190,7 @@ main()
       nrr.push_back(0);
     } else { // i>0
       ar.push_back( (parms.const_a*x[i-1]+x[i-1]) );// parms.const_a*x[i-2]+parms.const_a*x[i-1]+x[i-1] if lag=2 ...etc
-      nrr.push_back( (parms.const_a*noise[i-1]+noise[i-1]) ); // noise only ar 如果加入現在時間的noise[i]而不是i-1，會很準
+      nrr.push_back( (parms.const_a*noise[i-1]+noise[i-1]) ); // noise only ar 如果加入現在時間的noise[i]而不是i-1，會很貼齊原本的
     }
   }
   
