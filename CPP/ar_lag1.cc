@@ -24,13 +24,13 @@ using namespace std; // 把STL全部用到命名空間，不用sin()可以直接
 
 // linspace 複製來的
 template<typename T>
-vector<double> linspace(T start_in, T end_in, int num_in)
+vector<float> linspace(T start_in, T end_in, int num_in)
 {
-  vector<double> linspaced;
+  vector<float> linspaced;
 
-  double start = static_cast<double>(start_in);
-  double end = static_cast<double>(end_in);
-  double num = static_cast<double>(num_in);
+  float start = static_cast<float>(start_in);
+  float end = static_cast<float>(end_in);
+  float num = static_cast<float>(num_in);
 
   if (num == 0) { return linspaced; }
   if (num == 1) 
@@ -39,7 +39,7 @@ vector<double> linspace(T start_in, T end_in, int num_in)
       return linspaced;
     }
 
-  double delta = (end - start) / (num - 1);
+  float delta = (end - start) / (num - 1);
 
   for(int i=0; i < num-1; ++i)
     {
@@ -52,11 +52,11 @@ vector<double> linspace(T start_in, T end_in, int num_in)
 
 // 列印1d vector 除錯用
 // function定義方式 用vector, 可以簡單增加變數
-// vector<double> vec, vector<double> vcc......
-void print_vector(vector<double> vec)
+// vector<float> vec, vector<float> vcc......
+void print_vector(vector<float> vec)
 {
   cout << "size: " << vec.size() << endl;
-  for (double d : vec)
+  for (float d : vec)
     cout << d << " ";
   cout << endl;
 }
@@ -71,7 +71,7 @@ void print_vector(vector<double> vec)
 
 typedef struct
 {
-  double const_a = 0.1; // constant gain
+  float const_a = 0.1; // constant gain
 }parmeters; // 這是別名
 
 int 
@@ -79,41 +79,55 @@ main()
 {
   parmeters parms;
   // 產生 time [1,100] + seq length
-  vector<double>  t = linspace(1,endtime+seq,samples);
+  vector<float>  t = linspace(1,endtime+seq,samples);
   // 產生noise [-1,1]
-  vector<double> noise;
+  vector<float> noise;
   for (int i=0; i<= t.size()-1; i++){
-    noise.push_back( (double) (rand()%200000-100000)/100000 ); 
+    noise.push_back( (float) (rand()%200000-100000)/100000 ); 
   }
   // 產生 signal
-  vector<double> xt;
-  vector<double> x; // add noise
+  vector<float> xt;
+  vector<float> x; // add noise
   for (int i=0; i<= t.size()-1; i++){
-    xt.push_back( (double) (2*cos(omega*t[i])+sin(omega/5*t[i])+5) ); 
+    xt.push_back( (float) (2*cos(omega*t[i])+sin(omega/5*t[i])+5) ); 
     // x = xt+noise;
-    x.push_back( (double) (xt[i]+ noise[i]) );
+    x.push_back( (float) (xt[i]+ noise[i]) );
   }
   // AR(lag) 事後預測 到endtime
-  vector<double> ar;
-  double mean;
-  double variance;
+  vector<float> ar;
   for (int i=0; i<= t.size()-1; i++){
     if(i<lag || t[i]>(endtime) ){
       ar.push_back(0); // 不存東西
     } else{ // i>0
       ar.push_back(parms.const_a*x[i-1]+x[i-1]);// parms.const_a*x[i-2]+parms.const_a*x[i-1]+x[i-1] if lag=2 ...etc
-      //calc variance
-      double data[ar.size()]; 
-      copy(ar.begin(), ar.end(), data);
-      mean = gsl_stats_mean(data, 1, i+1);
-      variance = gsl_stats_variance(data, 1, i+1);
-      cout<< "mean: "<< mean<<endl<<"var: "<< variance<<endl<<endl;
+      cout<<"ar.size(): "<<i<<"/"<< ar.size()<<endl;
+      // //calc variance // gsl不知道如何處理lag的問題，所以還是自己寫
+      // float mean=0;
+      // float variace=0;
+      // float data[ar.size()]; 
+      // copy(ar.begin(), ar.end(), data);
+      // mean = gsl_stats_mean(data, 1, i);
+      // variance = gsl_stats_variance(data, 1, i);
+      // cout<< "mean: "<< mean<<endl<<"var: "<< variance<<endl;
+
+      // calc mean
+      float mean=0;
+      for (i=lag; i<= ar.size()-1;i++){
+        mean = ar[i] + mean;
+      }
+      mean=mean/(ar.size()-lag);
+      // calc variance
+      float variance =0;
+      for (i=lag; i<= ar.size()-1;i++){
+        variance = pow(ar[i]-mean,2) + variance;
+      }
+      variance= variance/(ar.size()-lag-1);
+      cout<<"mean: "<< mean<<endl<<"var: "<< variance<<endl<<endl;
     }
   }
   print_vector(ar);
   // Mean squared prediction error(MSPE)
-  // Stationarity 恆定性 期望值=mean val --> variance--> covariance
-  
+  // Stationarity 恆定性 期望值=mean val --> variance--> covariance gaussian distribution
 
   // 寫入csv
   ofstream out("test.csv"); // sefl-define
